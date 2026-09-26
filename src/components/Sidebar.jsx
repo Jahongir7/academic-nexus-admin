@@ -40,9 +40,11 @@ const Sidebar = ({ pendingCount = 0 }) => {
       <div>
         {/* Brand header */}
         <div className="p-5 border-b border-slate-800/80 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-            <GraduationCap className="w-6 h-6" />
-          </div>
+          <img
+            src="https://www.mamunedu.uz/images/logo.png"
+            alt="Ma'mun Universiteti"
+            className="h-10 w-auto object-contain shrink-0"
+          />
           <div>
             <h1 className="font-extrabold text-sm text-white tracking-wide flex items-center gap-1.5">
               Academic Nexus

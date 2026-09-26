@@ -39,9 +39,11 @@ const Login = () => {
 
       <div className="w-full max-w-md glass-panel rounded-3xl p-8 shadow-2xl relative z-10 border border-slate-800">
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 mx-auto flex items-center justify-center text-white shadow-xl shadow-indigo-500/30 mb-4">
-            <GraduationCap className="w-9 h-9" />
-          </div>
+          <img
+            src="https://www.mamunedu.uz/images/logo.png"
+            alt="Ma'mun Universiteti Logo"
+            className="h-16 w-auto object-contain mx-auto mb-4"
+          />
           <h1 className="text-2xl font-black text-white tracking-tight">Academic Nexus</h1>
           <p className="text-xs text-indigo-300 font-semibold mt-1 uppercase tracking-widest">
             Ma'mun Universiteti Admin Paneli
