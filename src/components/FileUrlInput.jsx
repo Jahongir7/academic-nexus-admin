@@ -12,6 +12,10 @@ const FileUrlInput = ({
   placeholder = "https://example.com/file.jpg",
   accept = "image/*,.pdf,.doc,.docx",
   required = false,
+  folder = "it_team_doc",
+  prefix = "cert",
+  newName,
+  extraPayload,
 }) => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -27,6 +31,28 @@ const FileUrlInput = ({
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('folder', folder);
+
+      const generatedName =
+        newName ||
+        (() => {
+          const now = new Date();
+          const mm = String(now.getMonth() + 1).padStart(2, "0");
+          const dd = String(now.getDate()).padStart(2, "0");
+          const time = String(now.getTime()).slice(-8);
+          const rand = Math.random().toString(36).substring(2, 8);
+          return `${prefix}-${mm}${dd}-${time}_${rand}`;
+        })();
+
+      formData.append('new_name', generatedName);
+
+      if (extraPayload) {
+        Object.entries(extraPayload).forEach(([key, val]) => {
+          if (val !== undefined && val !== null) {
+            formData.append(key, String(val));
+          }
+        });
+      }
 
       const res = await fetch('https://mamun.university/api/cloudinary/upload', {
         method: 'POST',
@@ -35,16 +61,21 @@ const FileUrlInput = ({
 
       const json = await res.json();
 
-      if ((json.status === 200 || res.ok) && json.data?.url) {
-        onChange(json.data.url);
-      } else if (json.url) {
-        onChange(json.url);
+      const uploadedUrl =
+        json.data?.secure_url ||
+        json.data?.url ||
+        json.secure_url ||
+        json.url ||
+        (typeof json.data === "string" ? json.data : null);
+
+      if ((json.status === 200 || res.ok) && uploadedUrl) {
+        onChange(uploadedUrl);
       } else {
         throw new Error(json.message || "Faylni yuklashda xatolik yuz berdi");
       }
     } catch (err) {
       console.error("Upload error:", err);
-      setError("Faylni yuklashda xatolik");
+      setError(err.message || "Faylni yuklashda xatolik");
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
