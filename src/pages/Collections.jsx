@@ -18,17 +18,16 @@ import {
   ExternalLink,
   Download,
   Eye,
-  Filter,
   Sparkles,
   Tag,
 } from 'lucide-react';
 
+const EVENT_TYPE_OPTIONS = ['respublika', 'xalqaro'];
+
 const Collections = () => {
   const [collections, setCollections] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedEventType, setSelectedEventType] = useState('all');
 
   const toast = useToast();
@@ -44,7 +43,6 @@ const Collections = () => {
   // Form state
   const initialForm = {
     title: '',
-    category: '',
     eventLocation: '',
     eventDate: '',
     eventType: 'respublika',
@@ -57,25 +55,12 @@ const Collections = () => {
   const [formData, setFormData] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch categories
-  const fetchCategories = async () => {
-    try {
-      const res = await axiosClient.get('/collections/categories');
-      if (res.data.success) {
-        setCategories(res.data.data);
-      }
-    } catch (err) {
-      console.error("Kategoriyalarni yuklashda xatolik:", err);
-    }
-  };
-
   // Fetch collections
   const fetchCollections = async () => {
     setLoading(true);
     try {
       const params = {};
       if (search.trim()) params.search = search.trim();
-      if (selectedCategory && selectedCategory !== 'all') params.category = selectedCategory;
       if (selectedEventType && selectedEventType !== 'all') params.eventType = selectedEventType;
       params.all = 'true';
 
@@ -91,15 +76,11 @@ const Collections = () => {
   };
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
     const timer = setTimeout(() => {
       fetchCollections();
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, selectedCategory, selectedEventType]);
+  }, [search, selectedEventType]);
 
   // Open Add modal
   const handleOpenAdd = () => {
@@ -113,7 +94,6 @@ const Collections = () => {
     setEditingCollection(col);
     setFormData({
       title: col.title || '',
-      category: col.category || '',
       eventLocation: col.eventLocation || '',
       eventDate: col.eventDate || '',
       eventType: col.eventType || 'respublika',
@@ -133,8 +113,8 @@ const Collections = () => {
     if (!formData.title.trim()) {
       return toast.warning("To'plam sarlavhasi kiritilishi shart");
     }
-    if (!formData.category.trim()) {
-      return toast.warning("Kategoriya tanlanishi yoki kiritilishi shart");
+    if (!formData.eventType.trim()) {
+      return toast.warning("Kategoriya (tadbir shakli) tanlanishi shart");
     }
     if (!formData.eventLocation.trim()) {
       return toast.warning("O'tkazilgan joyi kiritilishi shart");
@@ -154,7 +134,6 @@ const Collections = () => {
           toast.success("To'plam muvaffaqiyatli yangilandi");
           setIsFormOpen(false);
           fetchCollections();
-          fetchCategories();
         }
       } else {
         const res = await axiosClient.post('/collections', formData);
@@ -162,7 +141,6 @@ const Collections = () => {
           toast.success("Yangi to'plam yaratildi");
           setIsFormOpen(false);
           fetchCollections();
-          fetchCategories();
         }
       }
     } catch (err) {
@@ -189,13 +167,18 @@ const Collections = () => {
         setIsDeleteOpen(false);
         setDeletingId(null);
         fetchCollections();
-        fetchCategories();
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "O'chirishda xatolik");
     } finally {
       setDeleteLoading(false);
     }
+  };
+
+  const getEventTypeLabel = (type) => {
+    if (type === 'xalqaro') return 'Xalqaro';
+    if (type === 'respublika') return 'Respublika';
+    return type;
   };
 
   return (
@@ -221,7 +204,7 @@ const Collections = () => {
       {/* Filter and Search Bar */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
         {/* Search */}
-        <div className="md:col-span-5 relative">
+        <div className="md:col-span-8 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
@@ -232,30 +215,14 @@ const Collections = () => {
           />
         </div>
 
-        {/* Category Filter */}
+        {/* Kategoriya (eventType) Filter */}
         <div className="md:col-span-4 relative">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500 transition cursor-pointer appearance-none"
-          >
-            <option value="all">Barcha kategoriyalar ({categories.length})</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* EventType Filter */}
-        <div className="md:col-span-3 relative">
           <select
             value={selectedEventType}
             onChange={(e) => setSelectedEventType(e.target.value)}
             className="w-full px-3.5 py-2 text-xs bg-slate-900 border border-slate-700/80 rounded-xl text-slate-200 focus:outline-none focus:border-indigo-500 transition cursor-pointer appearance-none"
           >
-            <option value="all">Barcha shakllar</option>
+            <option value="all">Barcha kategoriyalar</option>
             <option value="respublika">Respublika miqyosida</option>
             <option value="xalqaro">Xalqaro miqyosida</option>
           </select>
@@ -291,7 +258,6 @@ const Collections = () => {
                 <tr>
                   <th className="px-5 py-3.5">To'plam sarlavhasi</th>
                   <th className="px-4 py-3.5">Kategoriya</th>
-                  <th className="px-4 py-3.5">Tadbir shakli</th>
                   <th className="px-4 py-3.5">Joyi & Vaqti</th>
                   <th className="px-4 py-3.5">Fayl & DOI</th>
                   <th className="px-4 py-3.5 text-center">Statistika</th>
@@ -325,15 +291,7 @@ const Collections = () => {
                       </div>
                     </td>
 
-                    {/* Category */}
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">
-                        <Tag className="w-3 h-3" />
-                        {item.category}
-                      </span>
-                    </td>
-
-                    {/* Event Type */}
+                    {/* Kategoriya (eventType) */}
                     <td className="px-4 py-4 whitespace-nowrap">
                       {item.eventType === 'xalqaro' ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
@@ -449,50 +407,15 @@ const Collections = () => {
             />
           </div>
 
-          {/* Kategoriya (Creatable Select) va Tadbir shakli */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Kategoriya - Creatable Select */}
-            <CreatableSelect
-              label="Kategoriya (Mavjudini tanlang yoki yangi yozing)"
-              options={categories}
-              value={formData.category}
-              onChange={(val) => setFormData({ ...formData, category: val })}
-              required
-            />
-
-            {/* Tadbir shakli */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-300">
-                Tadbir shakli <span className="text-rose-400">*</span>
-              </label>
-              <div className="grid grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, eventType: 'respublika' })}
-                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border transition ${
-                    formData.eventType === 'respublika'
-                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                      : 'bg-slate-900 border-slate-700/80 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Respublika</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, eventType: 'xalqaro' })}
-                  className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border transition ${
-                    formData.eventType === 'xalqaro'
-                      ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                      : 'bg-slate-900 border-slate-700/80 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span>Xalqaro</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          {/* Kategoriya (eventType) — CreatableSelect */}
+          <CreatableSelect
+            label="Kategoriya (Tadbir shakli)"
+            options={EVENT_TYPE_OPTIONS}
+            value={formData.eventType}
+            onChange={(val) => setFormData({ ...formData, eventType: val })}
+            placeholder="Tanlang yoki yangi kiriting (respublika, xalqaro)"
+            required
+          />
 
           {/* O'tkazilgan joyi va O'tkazilgan vaqti */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
