@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Modal from '../components/Modal';
 import ConfirmModal from '../components/ConfirmModal';
+import FileUrlInput from '../components/FileUrlInput';
 import axiosClient from '../api/axiosClient';
 import { useToast } from '../context/ToastContext';
 import {
@@ -41,6 +42,8 @@ const Issues = () => {
     articlesCount: 0,
     isCurrent: false,
     publishedDate: new Date().toISOString().split('T')[0],
+    fileUrl: '',
+    fullFileUrl: '',
   };
   const [formData, setFormData] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
@@ -103,6 +106,8 @@ const Issues = () => {
       publishedDate: issue.publishedDate
         ? new Date(issue.publishedDate).toISOString().split('T')[0]
         : new Date().toISOString().split('T')[0],
+      fileUrl: issue.fileUrl || issue.fullFileUrl || '',
+      fullFileUrl: issue.fullFileUrl || issue.fileUrl || '',
     });
     setIsFormOpen(true);
   };
@@ -262,6 +267,17 @@ const Issues = () => {
                       <span className="flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5 text-cyan-400" /> {issue.articlesCount || 0} maqola
                       </span>
+                      {(issue.fullFileUrl || issue.fileUrl) && (
+                        <a
+                          href={issue.fullFileUrl || issue.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-medium"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <FileText className="w-3.5 h-3.5 text-emerald-400" /> To'liq fayl
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -361,6 +377,16 @@ const Issues = () => {
                 className="admin-input w-full"
               />
             </div>
+          </div>
+
+          <div>
+            <FileUrlInput
+              label="To'liq fayl"
+              value={formData.fullFileUrl || formData.fileUrl || ''}
+              onChange={(url) => setFormData({ ...formData, fileUrl: url, fullFileUrl: url })}
+              placeholder="https://... Jurnal to'liq PDF fayli"
+              accept=".pdf"
+            />
           </div>
 
           <div className="flex items-center gap-2 pt-2">
