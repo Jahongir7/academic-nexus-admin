@@ -9,6 +9,7 @@ import {
   Newspaper,
   Users,
   Settings,
+  FolderArchive,
   GraduationCap,
   LogOut,
   Sparkles,
@@ -24,6 +25,7 @@ const Sidebar = ({ pendingCount = 0 }) => {
     { label: 'Jurnallar', path: '/journals', icon: BookOpen },
     { label: 'Jildlar & Sonlar', path: '/issues', icon: Layers },
     { label: 'Maqolalar', path: '/articles', icon: FileText },
+    { label: "To'plamlar", path: '/collections', icon: FolderArchive },
     {
       label: 'Topshirilgan Maqolalar',
       path: '/submissions',

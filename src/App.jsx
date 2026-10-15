@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Journals from './pages/Journals';
 import Issues from './pages/Issues';
 import Articles from './pages/Articles';
+import Collections from './pages/Collections';
 import Submissions from './pages/Submissions';
 import News from './pages/News';
 import Users from './pages/Users';
@@ -117,6 +118,17 @@ function App() {
                 <ProtectedRoute>
                   <AdminLayout>
                     <Articles />
+                  </AdminLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/collections"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <Collections />
                   </AdminLayout>
                 </ProtectedRoute>
               }
